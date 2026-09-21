@@ -166,7 +166,70 @@ class Dataset:
             df = pd.DataFrame(self.X, columns=self.features)
             df[self.label] = self.y
             return df
+        
+    def dropna(self):
+        """
+        Remove todas as amostras que contêm pelo menos um valor nulo (NaN).
+        
+        Returns
+        -------
+        self (modified Dataset object)
+        """
+        mask = ~np.isnan(self.X).any(axis=1)
+        
+        self.X = self.X[mask]
+        if self.has_label():
+            self.y = self.y[mask]
+            
+        return self
 
+    def fillna(self, value: Union[float, str]):
+        """
+        Substitui todos os valores nulos por um valor fixo, pela média ("mean") ou mediana ("median").
+        
+        Parameters
+        ----------
+        value : float ou str ("mean" ou "median")
+        
+        Returns
+        -------
+        self (modified Dataset object)
+        """
+        mask = np.isnan(self.X)
+        
+        if value == "mean":
+            col_means = np.nanmean(self.X, axis=0)
+            linhas, colunas = np.where(mask)
+            self.X[linhas, colunas] = col_means[colunas]
+            
+        elif value == "median":
+            col_medians = np.nanmedian(self.X, axis=0)
+            linhas, colunas = np.where(mask)
+            self.X[linhas, colunas] = col_medians[colunas]
+            
+        else:
+            self.X[mask] = float(value)
+            
+        return self
+
+    def remove_by_index(self, index: int):
+        """
+        Remove uma amostra (linha) através do seu índice.
+        
+        Parameters
+        ----------
+        index : int
+            O índice da amostra a remover.
+            
+        Returns
+        -------
+        self (modified Dataset object)
+        """
+        self.X = np.delete(self.X, index, axis=0)
+        if self.has_label():
+            self.y = np.delete(self.y, index, axis=0)
+            
+        return self
     @classmethod
     def from_random(cls,
                     n_samples: int,
@@ -202,7 +265,7 @@ class Dataset:
 if __name__ == '__main__':
     X = np.array([[1, 2, 3], [4, 5, 6]])
     y = np.array([1, 2])
-    features = np.array(['a', 'b', 'c'])
+    features = ['a', 'b', 'c']
     label = 'y'
     dataset = Dataset(X, y, features, label)
     print(dataset.shape())
@@ -214,3 +277,28 @@ if __name__ == '__main__':
     print(dataset.get_min())
     print(dataset.get_max())
     print(dataset.summary())
+
+    print("\n-Testes de Limpeza de Dados")
+    # Criar um dataset com alguns NaNs para testar
+    X_nan = np.array([[1, 2, np.nan], [4, 5, 6], [np.nan, 8, 9]])
+    y_nan = np.array([1, 2, 3])
+    dataset_nan = Dataset(X_nan, y_nan, features, label)
+    
+    print("Dataset com NaNs:\n", dataset_nan.X)
+    
+    # Testar o fillna
+    dataset_nan.fillna("mean")
+    print("\nApós fillna('mean'):\n", dataset_nan.X)
+    
+    # Adicionar um NaN manualmente para testar o dropna
+    dataset_nan.X[1, 1] = np.nan
+    print("\nAdicionado NaN na linha 1:\n", dataset_nan.X)
+    
+    dataset_nan.dropna()
+    print("\nApós dropna():\n", dataset_nan.X)
+    print("y correspondente:\n", dataset_nan.y)
+    
+    # Testar remove_by_index (remover a primeira linha, índice 0)
+    dataset_nan.remove_by_index(0)
+    print("\nApós remove_by_index(0):\n", dataset_nan.X)
+    print("y correspondente:\n", dataset_nan.y)
