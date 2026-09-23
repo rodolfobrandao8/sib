@@ -279,18 +279,15 @@ if __name__ == '__main__':
     print(dataset.summary())
 
     print("\n-Testes de Limpeza de Dados")
-    # Criar um dataset com alguns NaNs para testar
     X_nan = np.array([[1, 2, np.nan], [4, 5, 6], [np.nan, 8, 9]])
     y_nan = np.array([1, 2, 3])
     dataset_nan = Dataset(X_nan, y_nan, features, label)
     
     print("Dataset com NaNs:\n", dataset_nan.X)
     
-    # Testar o fillna
     dataset_nan.fillna("mean")
     print("\nApós fillna('mean'):\n", dataset_nan.X)
     
-    # Adicionar um NaN manualmente para testar o dropna
     dataset_nan.X[1, 1] = np.nan
     print("\nAdicionado NaN na linha 1:\n", dataset_nan.X)
     
@@ -298,7 +295,6 @@ if __name__ == '__main__':
     print("\nApós dropna():\n", dataset_nan.X)
     print("y correspondente:\n", dataset_nan.y)
     
-    # Testar remove_by_index (remover a primeira linha, índice 0)
     dataset_nan.remove_by_index(0)
     print("\nApós remove_by_index(0):\n", dataset_nan.X)
     print("y correspondente:\n", dataset_nan.y)

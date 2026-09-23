@@ -29,3 +29,30 @@ class TestDataset(unittest.TestCase):
         dataset = Dataset.from_random(10, 5, 3, features=['a', 'b', 'c', 'd', 'e'], label='y')
         self.assertEqual((10, 5), dataset.shape())
         self.assertTrue(dataset.has_label())
+
+    def test_dropna(self):
+        X = np.array([[1, 2, np.nan], [4, 5, 6], [np.nan, 8, 9]])
+        y = np.array([1, 2, 3])
+        dataset = Dataset(X, y, features=['a', 'b', 'c'], label='y')
+        dataset.dropna()
+
+        self.assertEqual((1, 3), dataset.shape())
+        self.assertEqual(1, len(dataset.y))
+
+    def test_fillna(self):
+        X = np.array([[1, 2, np.nan], [4, 5, 6], [np.nan, 8, 9]])
+        y = np.array([1, 2, 3])
+        dataset = Dataset(X, y, features=['a', 'b', 'c'], label='y')
+        dataset.fillna(0)
+        
+        self.assertFalse(np.isnan(dataset.X).any())
+
+    def test_remove_by_index(self):
+        X = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        y = np.array([1, 2, 3])
+        dataset = Dataset(X, y, features=['a', 'b', 'c'], label='y')
+        dataset.remove_by_index(1)
+        
+        self.assertEqual((2, 3), dataset.shape())
+        self.assertEqual(2, len(dataset.y))
+        self.assertEqual(7, dataset.X[1, 0])
