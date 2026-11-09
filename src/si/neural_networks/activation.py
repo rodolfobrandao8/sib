@@ -136,15 +136,44 @@ class SoftmaxActivation(ActivationLayer):
         s = self.activation_function(input_data)
         return s * (1.0 - s)
 
+class LeakyReLUActivation(ActivationLayer):
+    """
+    Funcao de ativacao Leaky ReLU:
+    f(x) = max(alpha * x, x)
+    f'(x) = 1 se x >= 0, senao alpha
+
+    Parameters
+    --------
+    alpha : float, default=0.01
+        Inclinacao para valores de entrada negativos.
+    """
+
+    def __init__(self, alpha: float = 0.01):
+        super().__init__()
+        self.alpha = alpha
+
+    def activation_function(self, input_data: np.ndarray) -> np.ndarray:
+        """
+        Calcula a funcao de ativacao Leaky ReLU.
+        """
+        return np.where(input_data >= 0, input_data, self.alpha * input_data)
+
+    def derivative(self, input_data: np.ndarray) -> np.ndarray:
+        """
+        Calcula a derivada da Leaky ReLU.
+        """
+        return np.where(input_data >= 0, 1.0, self.alpha)
+
 
 if __name__ == "__main__":
     x = np.array([-2.5, 1.2, 0.3, 0.4, 1.1, 2.7])
     eps = 1e-6
 
+
     print("Teste das Derivadas de Ativacao")
-    for act in [SigmoidActivation(), ReLUActivation(), TanhActivation()]:
+    for act in [SigmoidActivation(), ReLUActivation(), TanhActivation(), LeakyReLUActivation()]:
         num = (act.activation_function(x + eps) - act.activation_function(x - eps)) / (2 * eps)
         diff = np.abs(num - act.derivative(x)).max()
         print(f"{act.layer_name()}: diferenca maxima = {diff:.2e}")
         assert diff < 1e-7, f"Erro na derivada de {act.layer_name()}"
-    print("Todas as funcoes de ativacao passaram no gradient check!")
+    print("Todas as funcoes de ativacao passaram no gradient check")
